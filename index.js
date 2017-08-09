@@ -171,7 +171,7 @@ module.exports = function(options) {
 						var receipt = text(res.body, 'ReceiptHandle');
 
 						try {
-			  body = options.raw ? unscape(body) : JSON.parse(unscape(body));
+							body = options.raw ? unscape(body) : JSON.parse(unscape(body));
 						} catch (err) {
 							return next();
 						}
