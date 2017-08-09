@@ -120,12 +120,21 @@ module.exports = function(options) {
 
 	var that = new events.EventEmitter();
 
-	that.push = function(name, message, callback) {
+	that.push = function(name, message, options, callback) {
+		if (typeof options === 'function') return that.push(name, message, {}, workers);
+
 		name = namespace+name;
 
 		queueURL(name, function(url) {
 			var body = options.raw ? message : JSON.stringify(message);
-			retry(request, queryURL('SendMessage', url, {MessageBody: body}), callback);
+			var payload = {
+				MessageBody: body
+			};
+
+			if (typeof options.MessageGroupId !== 'undefined') payload.MessageGroupId = options.MessageGroupId;
+			if (typeof options.MessageDeduplicationId !== 'undefined') payload.MessageDeduplicationId = options.MessageDeduplicationId;
+
+			retry(request, queryURL('SendMessage', url, payload), callback);
 		});
 	};
 
@@ -162,7 +171,7 @@ module.exports = function(options) {
 						var receipt = text(res.body, 'ReceiptHandle');
 
 						try {
-              body = options.raw ? unscape(body) : JSON.parse(unscape(body));
+			  body = options.raw ? unscape(body) : JSON.parse(unscape(body));
 						} catch (err) {
 							return next();
 						}
